@@ -1,0 +1,12 @@
+[package]
+name = "r_kernel"
+version = "0.1.0"
+authors = ["PR"]
+edition = "2021"
+build = "build.rs"
+
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+panic = "abort"

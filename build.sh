@@ -8,9 +8,11 @@ OUTPUT_DIR="output"
 
 
 echo "==================== Start ===================="
-if [ ! -f "$OUTPUT_DIR" ]; then
-	rm -R "$OUTPUT_DIR"
+# Clean output directory if it exists
+if [ -d "$OUTPUT_DIR" ]; then
+    rm -r "$OUTPUT_DIR"
 fi
+
 mkdir -p "$OUTPUT_DIR"
 
 echo " -> Kernel compilation"
@@ -20,7 +22,11 @@ echo " -> Kernel compilation"
 
 echo " -> Bootloader compilation"
 # Compile the NASM bootloader
-nasm -f bin "$ASM_FILE" -o "$BIN_FILE"
+nasm -f bin -I bootloader/ "$ASM_FILE" -o "$BIN_FILE"
+if [ $? -ne 0 ]; then
+    echo "Bootloader compilation failed!"
+    exit 1
+fi
 
 echo " -> Boot Image creation"
 dd if="$BIN_FILE" of="$IMG_FILE" bs=512 count=1 conv=notrunc

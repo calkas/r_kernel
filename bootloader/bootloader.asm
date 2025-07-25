@@ -1,3 +1,29 @@
+; Bootloader for R_Kernel
+; This bootloader is loaded by BIOS and sets up the environment for the kernel.
+; It switches to protected mode, loads the kernel from disk, and jumps to it.
+
+; Memory layout after booting:
+;        | R_Kernel entry point             |
+;0x200000|----------------------------------|
+;        | free                             |
+;0x100000|----------------------------------|
+;        | BIOS (256 kB)                    |
+; 0xC0000|----------------------------------|
+;        | video memory (128 kB)            |
+; 0xA0000|----------------------------------|
+;        | extended BIOS data area (639 kB) |
+; 0x9fc00|----------------------------------|
+;        | free (638 kB)                    |
+;  0x7e00|----------------------------------|
+;        | loaded boot sector (512 bytes)   |
+;  0x7c00|----------------------------------|
+;        |                                  |
+;   0x500|----------------------------------|
+;        | BIOS data area (256 bytes)       |
+;   0x400|----------------------------------|
+;        | interrupt vector table (1 kB)    |
+;     0x0------------------------------------
+
 
 [org 0x7C00]
 [BITS 16]

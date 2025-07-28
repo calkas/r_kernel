@@ -38,6 +38,9 @@ start:
     mov si, welcome_msg
     call print
 
+    ; Load the kernel
+    call load_kernel
+
     ; Switch to protected mode
     call switch_to_protected_mode
 
@@ -47,6 +50,30 @@ start:
 ; Include GDT setup
 %include "gdt_32bit.asm"
 
+load_kernel:
+    ; Load the kernel from disk
+    mov ax, 0x0000  ; Segment where the kernel will be loaded
+    mov es, ax      ; Set ES to segment 0
+    mov bx, 0x1000  ; Load kernel at 0x1000:0000
+
+    ; Read the kernel from disk (assuming it is in the first sector)
+    mov ah, 0x02    ; BIOS read sector function
+    mov al, 15      ; N sectors to read
+    mov ch, 0       ; Cylinder 0
+    mov cl, 2       ; Sector 2 (skipping boot sector)
+    mov dh, 0       ; Head 0
+    int 0x13        ; Call BIOS interrupt
+
+    jc .load_error   ; Jump if carry flag is set (error)
+
+    ret
+
+
+.load_error:
+    ; Handle load error
+    mov si, error_msg
+    call print
+    jmp $
 switch_to_protected_mode:
     cli
     xor ax, ax
@@ -86,6 +113,9 @@ protected_mode_entry:
     mov ebp, 0x90000
     mov esp, ebp
 
+    ; Jump to the kernel entry point
+    jmp CODE_SEGMENT:0x100000
+
 .hang:
     cli
     hlt
@@ -106,6 +136,7 @@ print:
     ret
 
 welcome_msg db "Load R_Kernel...", 0
+error_msg db "Error loading kernel!", 0
 
 ; Boot sector padding
 times 510 - ($ - $$) db 0

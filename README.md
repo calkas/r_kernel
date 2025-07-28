@@ -35,6 +35,14 @@
 
 ```bash
 rustup override set nightly
+
+# For objcopy for bin
+rustup component add llvm-tools-preview
+cargo install cargo-binutils
+
+
+rust-objcopy r_kernel -O binary kernel.bin
+
 ```
 
 2. Building

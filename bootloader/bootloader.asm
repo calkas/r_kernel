@@ -2,29 +2,41 @@
 ; This bootloader is loaded by BIOS and sets up the environment for the kernel.
 ; It switches to protected mode, loads the kernel from disk, and jumps to it.
 
-; Memory layout after booting:
-;0x100000|----------------------------------|
-;        | BIOS (256 kB)                    |
-; 0xC0000|----------------------------------|
-;        | video memory (128 kB)            |
-; 0xA0000|----------------------------------|
-;        | extended BIOS data area (639 kB) |
-; 0x9fc00|----------------------------------|
-;        | free (638 kB)                    |
-;  0x7e00|----------------------------------|
-;        | loaded boot sector (512 bytes)   |
-;  0x7c00|----------------------------------|
-;        |                                  |
-;   0x500|----------------------------------|
-;        | BIOS data area (256 bytes)       |
-;   0x400|----------------------------------|
-;        | interrupt vector table (1 kB)    |
-;     0x0------------------------------------
+; Memory layout after:
+;       0x0------------------------------------
+;          | interrupt vector table (1 kB)    |
+;     0x400|----------------------------------|
+;          | BIOS data area (256 bytes)       |
+;     0x500|----------------------------------|
+;          |                                  |
+;    0x7c00|----------------------------------|
+;          | loaded boot sector (512 bytes)   |
+;    0x7e00|----------------------------------|
+;          | free (638 kB)                    |
+;    0x9000|             Stack                |
+;   0x9fc00|----------------------------------|
+;          | extended BIOS data area (639 kB) |
+;   0xA0000|----------------------------------|
+;          | video memory (128 kB)            |
+;   0xC0000|----------------------------------|
+;          | BIOS (256 kB)                    |
+;  0x100000|----------------------------------|
 
+
+; After loading the kernel:
+; The available space is about 0x9000 - 0x1000 = 0x8000 = 32 KB. Because we can overloaded bios
+;          |                                  |
+;    0x1000|       kernel entry               |
+;          |                                  |
+;          |                                  |
+;    0x9000|       kernel stack               |
+;   0xA0000|----------------------------------|
+;          | video memory (128 kB)            |
+;   0xC0000|----------------------------------|
 
 [org 0x7C00]
 [BITS 16]
-OS_OFFSET_ADDRESS equ 0x1000 ; Offset where the kernel will be loaded 0x7C00 + 0x1000 = 0x8C00
+OS_ENTRY_ADDRESS equ 0x1000 ; Address where the kernel will be loaded 0x100
 start:
     cli
     xor ax, ax
@@ -45,11 +57,11 @@ start:
 
 load_kernel:
     ; Set OS entry: 0x0000:0x1000 = 0x1000
-    mov bx, OS_OFFSET_ADDRESS
+    mov bx, OS_ENTRY_ADDRESS
 
     ; INT 13h - read sector
     mov ah, 0x02        ; Function: read
-    mov al, 1           ; Number of sectors
+    mov al, 1           ; Number of sectors - depends on the kernel size ~ N * 512 bytes (MAX 64 sectors)
     mov ch, 0           ; Cylinder
     mov cl, 2           ; Sector (must be > 0)
     mov dh, 0           ; Head
@@ -108,11 +120,11 @@ protected_mode_entry:
     mov gs, ax
     mov ss, ax
 
-    mov ebp, 0x90000
+    mov ebp, 0x90000 ; Set up the stack for 32-bit mode
     mov esp, ebp
 
     ; Jump to the kernel entry point
-    jmp CODE_SEGMENT:OS_OFFSET_ADDRESS
+    jmp CODE_SEGMENT:OS_ENTRY_ADDRESS
 
 .hang:
     cli

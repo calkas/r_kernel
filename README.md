@@ -5,27 +5,41 @@
 ### Memory
 
 ```bash
+; Bootloader for R_Kernel
+; This bootloader is loaded by BIOS and sets up the environment for the kernel.
+; It switches to protected mode, loads the kernel from disk, and jumps to it.
 
-        | R_Kernel entry point             |
-0x200000|----------------------------------|
-        | free                             |
-0x100000|----------------------------------|
-        | BIOS (256 kB)                    |
- 0xC0000|----------------------------------|
-        | video memory (128 kB)            |
- 0xA0000|----------------------------------|
-        | extended BIOS data area (639 kB) |
- 0x9fc00|----------------------------------|
-        | free (638 kB)                    |
-  0x7e00|----------------------------------|
-        | loaded boot sector (512 bytes)   |
-  0x7c00|----------------------------------|
-        |                                  |
-   0x500|----------------------------------|
-        | BIOS data area (256 bytes)       |
-   0x400|----------------------------------|
-        | interrupt vector table (1 kB)    |
-     0x0------------------------------------
+; Memory layout after:
+;       0x0------------------------------------
+;          | interrupt vector table (1 kB)    |
+;     0x400|----------------------------------|
+;          | BIOS data area (256 bytes)       |
+;     0x500|----------------------------------|
+;          |                                  |
+;    0x7c00|----------------------------------|
+;          | loaded boot sector (512 bytes)   |
+;    0x7e00|----------------------------------|
+;          | free (638 kB)                    |
+;    0x9000|             Stack                |
+;   0x9fc00|----------------------------------|
+;          | extended BIOS data area (639 kB) |
+;   0xA0000|----------------------------------|
+;          | video memory (128 kB)            |
+;   0xC0000|----------------------------------|
+;          | BIOS (256 kB)                    |
+;  0x100000|----------------------------------|
+
+
+; After loading the kernel:
+; The available space is about 0x9000 - 0x1000 = 0x8000 = 32 KB. Because we can overloaded bios
+;          |                                  |
+;    0x1000|       kernel entry               |
+;          |                                  |
+;          |                                  |
+;    0x9000|       kernel stack               |
+;   0xA0000|----------------------------------|
+;          | video memory (128 kB)            |
+;   0xC0000|----------------------------------|
 ```
 
 
@@ -64,8 +78,14 @@ nasm -f bin bootloader.asm -o bootloader.bin
 dd if=bootloader.bin of=bootdisk.img bs=512 count=1 conv=notrunc
 
 
-# Running
+# Running Bootloader
 kvm -drive format=raw,file=bootloader.bin -cpu host,-svm
+
+# Running OS
+kvm -drive format=raw,file=output/r_os.bin -cpu host,-svm
+
+# Disassembly
+ndisasm -o 0x7c00 r_os.bin 
 
 ```
 

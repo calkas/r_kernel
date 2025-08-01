@@ -1,28 +1,19 @@
 #![no_std]
 #![no_main]
-
+mod vga_printer;
 use core::panic::PanicInfo;
+use vga_printer::Printer;
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
     entry_32_bit();
 }
 
-
-static HELLO: &[u8] = b"Welcome to ..::R_Kernel::..";
-
-
 #[no_mangle]
 #[inline(never)]
 fn entry_32_bit() -> ! {
-    let vga_buffer = 0xb8000 as *mut u8;
-
-    for (i, &byte) in HELLO.iter().enumerate() {
-        unsafe {
-            *vga_buffer.offset(i as isize * 2) = byte;
-            *vga_buffer.offset(i as isize * 2 + 1) = 0xb;
-        }
-    }
+    let mut printer = Printer::default();
+    printer.print_character(b'R');
     loop {}
 }
 

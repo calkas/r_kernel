@@ -12,3 +12,6 @@ panic = "abort"
 panic = "abort"
 lto = true
 codegen-units = 1
+
+[dependencies]
+volatile = "0.2.6"

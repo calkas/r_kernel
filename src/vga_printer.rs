@@ -1,6 +1,7 @@
-use core::ptr::{read_volatile, write_volatile};
+#![warn(unused_imports)]
+#![allow(dead_code)]
+use core::ptr::write_volatile;
 
-#[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u8)]
 pub enum Color {
@@ -55,13 +56,10 @@ impl TextBufferAttribute {
     }
 }
 
-// 80×25
-// 2000 znaków × 2 bajty = 4000 bajtów
-
-/// # Safety
 /// This is a raw pointer to the VGA text buffer at address 0xb8000.
 /// Dereferencing this pointer is unsafe and must only be done in appropriate contexts,
 /// such as when running in an environment where direct access to VGA memory is allowed.
+/// 80 x 25 = 2000 chars × 2 bytes = 4000 bytes
 const VGA_BUFFER: *mut u8 = 0xb8000 as *mut u8;
 const SCREEN_WIDTH: usize = 80;
 const SCREEN_HEIGHT: usize = 25;

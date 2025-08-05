@@ -18,7 +18,6 @@ pub extern "C" fn _start() -> ! {
     {
         writeln!(printer, "Cr0 flags: PAGING and PROTECTED_MODE_ENABLE set").unwrap();
     }
-
     unsafe {
         asm!("nop");
     }
@@ -27,6 +26,9 @@ pub extern "C" fn _start() -> ! {
 }
 
 #[panic_handler]
-fn panic(_info: &PanicInfo) -> ! {
+fn panic(info: &PanicInfo) -> ! {
+    let mut panic_printer = Printer::default();
+    panic_printer.set_foreground(vga_printer::Color::Red);
+    write!(panic_printer, "panicked: {}", info.message()).unwrap();
     loop {}
 }

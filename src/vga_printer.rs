@@ -1,6 +1,6 @@
 #![warn(unused_imports)]
 #![allow(dead_code)]
-use core::ptr::write_volatile;
+use core::{fmt, ptr::write_volatile};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u8)]
@@ -72,6 +72,13 @@ pub struct Printer {
     cursor_position: ScreenCoords,
 }
 
+impl fmt::Write for Printer {
+    fn write_str(&mut self, s: &str) -> fmt::Result {
+        self.print(s);
+        Ok(())
+    }
+}
+
 impl Printer {
     pub fn print(&mut self, text: &str) {
         for character in text.bytes() {
@@ -106,7 +113,12 @@ impl Printer {
             b'\n' => self.new_line(),
             _ => {
                 if self.cursor_position.col >= SCREEN_WIDTH as u8 {
-                    self.new_line();
+                    //TODO in future scroll should be implemented
+                    if self.cursor_position.row == (SCREEN_HEIGHT - 1) as u8 {
+                        self.cursor_position = ScreenCoords { row: 0, col: 0 };
+                    } else {
+                        self.new_line();
+                    }
                 }
 
                 let offset = (self.cursor_position.row as usize * SCREEN_WIDTH

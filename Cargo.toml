@@ -3,7 +3,6 @@ name = "r_kernel"
 version = "0.1.0"
 authors = ["PR"]
 edition = "2021"
-build = "build.rs"
 
 [profile.dev]
 panic = "abort"
@@ -16,3 +15,4 @@ codegen-units = 1
 [dependencies]
 volatile = "0.2.6"
 x86_64 = "0.15.2"
+bootloader = "0.9"

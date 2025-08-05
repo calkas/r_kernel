@@ -14,9 +14,12 @@ pub extern "C" fn _start() -> ! {
     printer.print("R_OS\n");
 
     if Cr0::read().contains(Cr0Flags::PROTECTED_MODE_ENABLE) {
-        printer.print("Cr0 set");
+        printer.print("Cr0 set\n");
     }
 
+    if Cr0::read().contains(Cr0Flags::PAGING) {
+        printer.print("PG set\n");
+    }
     unsafe {
         asm!("nop");
     }

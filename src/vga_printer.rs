@@ -171,7 +171,9 @@ impl Printer {
             }
         }
 
-        self.cursor_position.col = 0;
-        self.cursor_position.row = (SCREEN_HEIGHT - 1) as u8;
+        self.cursor_position = ScreenCoords {
+            row: last_row as u8,
+            col: 0,
+        };
     }
 }

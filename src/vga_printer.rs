@@ -1,6 +1,9 @@
 #![warn(unused_imports)]
 #![allow(dead_code)]
-use core::{fmt, ptr::write_volatile};
+use core::{
+    fmt,
+    ptr::{read_volatile, write_volatile},
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u8)]
@@ -113,9 +116,8 @@ impl Printer {
             b'\n' => self.new_line(),
             _ => {
                 if self.cursor_position.col >= SCREEN_WIDTH as u8 {
-                    //TODO in future scroll should be implemented
                     if self.cursor_position.row == (SCREEN_HEIGHT - 1) as u8 {
-                        self.cursor_position = ScreenCoords { row: 0, col: 0 };
+                        self.scroll();
                     } else {
                         self.new_line();
                     }
@@ -139,8 +141,37 @@ impl Printer {
     fn new_line(&mut self) {
         self.cursor_position.col = 0;
         self.cursor_position.row += 1;
-        if self.cursor_position.row > SCREEN_HEIGHT as u8 {
-            self.cursor_position.row = 0;
+        if self.cursor_position.row >= SCREEN_HEIGHT as u8 {
+            self.scroll();
         }
+    }
+    fn scroll(&mut self) {
+        for row in 1..SCREEN_HEIGHT {
+            for col in 0..SCREEN_WIDTH {
+                let src_offset = (row * SCREEN_WIDTH + col) * 2;
+                let dst_offset = ((row - 1) * SCREEN_WIDTH + col) * 2;
+                unsafe {
+                    let character = read_volatile(VGA_BUFFER.add(src_offset));
+                    let attribute = read_volatile(VGA_BUFFER.add(src_offset + 1));
+                    write_volatile(VGA_BUFFER.add(dst_offset), character);
+                    write_volatile(VGA_BUFFER.add(dst_offset + 1), attribute);
+                }
+            }
+        }
+        //Clear last line
+        let last_row = SCREEN_HEIGHT - 1;
+        for col in 0..SCREEN_WIDTH {
+            let offset = (last_row * SCREEN_WIDTH + col) * 2;
+            unsafe {
+                write_volatile(VGA_BUFFER.add(offset), b' ');
+                write_volatile(
+                    VGA_BUFFER.add(offset + 1),
+                    self.text_attribute.get_attribute(),
+                );
+            }
+        }
+
+        self.cursor_position.col = 0;
+        self.cursor_position.row = (SCREEN_HEIGHT - 1) as u8;
     }
 }

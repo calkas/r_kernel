@@ -1,30 +1,38 @@
 #![no_std]
 #![no_main]
+
+//#[macro_use]
+
 mod vga_printer;
-use core::fmt::Write;
 use core::panic::PanicInfo;
-use vga_printer::Printer;
 use x86_64::registers::control::{Cr0, Cr0Flags};
 
 #[no_mangle]
 #[inline(never)]
 pub extern "C" fn _start() -> ! {
-    let mut printer = Printer::default();
-    printer.set_foreground(vga_printer::Color::LightGreen);
-    writeln!(printer, "..::Welcome to R_OS::..").unwrap();
-
+    welcome();
     if Cr0::read().contains(Cr0Flags::PROTECTED_MODE_ENABLE)
         && Cr0::read().contains(Cr0Flags::PAGING)
     {
-        writeln!(printer, "Cr0 flags: PAGING, PROTECTED_MODE_ENABLE set").unwrap();
+        kernel_logln!("Cr0 flags: PAGING, PROTECTED_MODE_ENABLE set");
     }
     loop {}
 }
 
+fn welcome() {
+    vga_printer::PRINTER
+        .lock()
+        .set_foreground(vga_printer::Color::Green);
+
+    kernel_logln!("..::Welcome to R_OS::..");
+
+    vga_printer::PRINTER
+        .lock()
+        .set_foreground(vga_printer::Color::White);
+}
+
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
-    let mut panic_printer = Printer::default();
-    panic_printer.set_foreground(vga_printer::Color::Red);
-    write!(panic_printer, "panicked: {}", info.message()).unwrap();
+    kernel_panic_log!("Panicked: {}", info.message());
     loop {}
 }

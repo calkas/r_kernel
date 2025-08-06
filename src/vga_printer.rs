@@ -5,6 +5,8 @@ use core::{
     ptr::{read_volatile, write_volatile},
 };
 
+use lazy_static::lazy_static;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u8)]
 pub enum Color {
@@ -176,4 +178,32 @@ impl Printer {
             col: 0,
         };
     }
+}
+lazy_static! {
+    pub static ref PRINTER: spin::Mutex<Printer> = spin::Mutex::new(Printer::default());
+}
+
+#[macro_export]
+macro_rules! kernel_log {
+    ($($arg:tt)*) => ({
+        use core::fmt::Write;
+        let _ = write!(vga_printer::PRINTER.lock(), $($arg)*);
+    });
+}
+
+#[macro_export]
+macro_rules! kernel_logln {
+    ($($arg:tt)*) => ({
+        use core::fmt::Write;
+        let _ = writeln!(vga_printer::PRINTER.lock(), $($arg)*);
+    });
+}
+
+#[macro_export]
+macro_rules! kernel_panic_log {
+    ($($arg:tt)*) => ({
+        use core::fmt::Write;
+        vga_printer::PRINTER.lock().set_foreground(vga_printer::Color::Red);
+        let _ = writeln!(vga_printer::PRINTER.lock(), $($arg)*);
+    });
 }

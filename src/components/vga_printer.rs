@@ -1,10 +1,14 @@
 #![warn(unused_imports)]
 #![allow(dead_code)]
-use core::{
-    fmt,
-    ptr::{read_volatile, write_volatile},
-};
-
+use core::clone::*;
+use core::cmp::*;
+use core::default::Default;
+use core::fmt;
+use core::fmt::*;
+use core::marker::*;
+use core::prelude::rust_2024::derive;
+use core::ptr::{read_volatile, write_volatile};
+use core::result::Result::Ok;
 use lazy_static::lazy_static;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -61,16 +65,21 @@ impl TextBufferAttribute {
     }
 }
 
-/// This is a raw pointer to the VGA text buffer at address 0xb8000.
-/// Dereferencing this pointer is unsafe and must only be done in appropriate contexts,
-/// such as when running in an environment where direct access to VGA memory is allowed.
-/// 80 x 25 = 2000 chars × 2 bytes = 4000 bytes
 const VGA_BUFFER: *mut u8 = 0xb8000 as *mut u8;
 const SCREEN_WIDTH: usize = 80;
 const SCREEN_HEIGHT: usize = 25;
 
 /// # Printer
-/// vga text mode
+/// `VGA text mode` base on raw pointer to the VGA text buffer at address 0xb8000.
+/// Dereferencing this pointer is unsafe and must only be done in appropriate contexts,
+/// such as when running in an environment where direct access to VGA memory is allowed.
+///
+/// ## Text buffer
+/// Each screen character is represented by two bytes:
+/// 16 bit register
+/// > Attribute(8 bit) Character(8 bit)
+///
+/// 80 x 25 = 2000 chars × 2 bytes = 4000 bytes
 #[derive(Default)]
 pub struct Printer {
     text_attribute: TextBufferAttribute,

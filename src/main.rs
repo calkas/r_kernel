@@ -1,10 +1,8 @@
 #![no_std]
 #![no_main]
-
-//#[macro_use]
-
-mod vga_printer;
 use core::panic::PanicInfo;
+use r_kernel::components::*;
+use r_kernel::{kernel_logln, kernel_panic_log};
 use x86_64::registers::control::{Cr0, Cr0Flags};
 
 #[no_mangle]

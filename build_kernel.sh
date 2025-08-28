@@ -19,7 +19,10 @@ fi
 
 mkdir -p "$OUTPUT_DIR"
 
-echo "Kernel compilation for target: $RUST_TARGET:"
+echo "Rust compiler version:"
+rustc --version
+
+echo "Kernel compilation for target: $RUST_TARGET"
 cargo bootimage
 
 echo "Displaying entry kernel address:"

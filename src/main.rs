@@ -4,7 +4,7 @@ use core::panic::PanicInfo;
 use r_kernel::components::{info, vga_printer};
 use r_kernel::{kernel_logln, kernel_panic_log};
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 #[inline(never)]
 pub extern "C" fn _start() -> ! {
     info::print_welcome_message();

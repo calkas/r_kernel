@@ -213,7 +213,7 @@ macro_rules! kernel_panic_log {
     ($($arg:tt)*) => ({
         use core::fmt::Write;
         vga_printer::PRINTER.lock().set_foreground(vga_printer::Color::Red);
-        let _ = writeln!(vga_printer::PRINTER.lock(), $($arg)*);
+        let _ = writeln!(vga_printer::PRINTER.lock(), "[PANIC]: {}", format_args!($($arg)*));
     });
 }
 
@@ -222,7 +222,7 @@ macro_rules! kernel_exception_log {
     ($($arg:tt)*) => ({
         use core::fmt::Write;
         vga_printer::PRINTER.lock().set_foreground(vga_printer::Color::Magenta);
-        let _ = writeln!(vga_printer::PRINTER.lock(), $($arg)*);
+        let _ = writeln!(vga_printer::PRINTER.lock(), "[EXCEPTION]: {}", format_args!($($arg)*));
         vga_printer::PRINTER.lock().set_foreground(vga_printer::Color::White);
     });
 }

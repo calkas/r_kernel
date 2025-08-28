@@ -24,13 +24,10 @@ extern "x86-interrupt" fn breakpoint_handler(_stack_frame: InterruptStackFrame) 
 extern "x86-interrupt" fn div_by_zero_handler(_stack_frame: InterruptStackFrame) {
     kernel_exception_log!("Div by zero");
 }
-// Problem
+
 extern "x86-interrupt" fn double_fault_handler(
     stack_frame: InterruptStackFrame,
-    error_code: u64,
+    _error_code: u64,
 ) -> ! {
-    panic!(
-        "[CPU EXCEPTION]: Double fault {:#?} and error_code {}",
-        stack_frame, error_code
-    );
+    panic!("Double fault!: {:#?}", stack_frame);
 }

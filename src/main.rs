@@ -19,6 +19,6 @@ pub extern "C" fn _start() -> ! {
 
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
-    kernel_panic_log!("Panicked: {}", info.message());
+    kernel_panic_log!("{}", info.message());
     loop {}
 }

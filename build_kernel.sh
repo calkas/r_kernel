@@ -19,6 +19,9 @@ fi
 
 mkdir -p "$OUTPUT_DIR"
 
+export CARGO_MANIFEST_DIR=$(pwd)
+echo "Current directory: $CARGO_MANIFEST_DIR"
+
 echo "Rust compiler version:"
 rustc --version
 
@@ -32,10 +35,10 @@ echo "Copying kernel binary to output directory:"
 BIN_FILE="target/$RUST_TARGET/debug/bootimage-$RUST_KERNEL.bin"
 # Copy the binary and img to the output directory
 cp "$BIN_FILE" "$OUTPUT_DIR/"
-
+echo -e "\e[35mKernel name: bootimage-$RUST_KERNEL.bin\e[0m"
 KERNEL_SIZE=$(stat -c%s "$OUTPUT_DIR/bootimage-$RUST_KERNEL.bin")
 SECTORS=$(( (KERNEL_SIZE + 511) / 512 ))
-echo "Kernel size: $KERNEL_SIZE bytes ($SECTORS sectors)"
+echo -e "\e[35mKernel size: $KERNEL_SIZE bytes ($SECTORS sectors)\e[0m"
 
 echo ""
 echo "=============================================="
